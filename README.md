@@ -107,15 +107,16 @@ SHA256SUMS
 
 ### Core workflow
 
-<details>
-<summary><strong>1. Constitution — Define project rules</strong></summary>
+#### 1. Constitution — Define project rules
 
-**Skill:** [`speckit-constitution`](./skills/speckit-constitution/SKILL.md)
+[`speckit-constitution`](./skills/speckit-constitution/SKILL.md)
 
-**What it does**  
+**What it does**
+
 Defines or updates long-lived project principles and constraints so agents make decisions within a consistent engineering framework.
 
-**When to use it**
+**Best used when**
+
 - Starting a new project
 - Establishing architecture or coding principles
 - Defining testing, security, quality, or governance rules
@@ -131,22 +132,21 @@ Define project principles that require:
 - No direct secrets in source control
 ```
 
-Think of it as: **What rules must this project follow?**
+> **In one sentence:** What rules must this project follow?
 
-</details>
+#### 2. Specify — Turn an idea into a clear specification
 
-<details>
-<summary><strong>2. Specify — Turn an idea into a clear specification</strong></summary>
+[`speckit-specify`](./skills/speckit-specify/SKILL.md)
 
-**Skill:** [`speckit-specify`](./skills/speckit-specify/SKILL.md)
+**What it does**
 
-**What it does**  
 Transforms a natural-language feature idea into a structured Feature Specification focused on user needs, expected behavior, and acceptance criteria.
 
-**When to use it**
+**Best used when**
+
 - You have a feature idea but no formal specification yet
-- Requirements are still scattered across notes or conversation
-- You want the agent to define scope before discussing implementation
+- Requirements are scattered across notes, conversations, or tickets
+- You want to establish scope before discussing implementation details
 
 **Example**
 
@@ -156,25 +156,24 @@ Administrators must be able to disable users,
 and disabled users should no longer be able to access the application.
 ```
 
-Think of it as: **What exactly are we building?**
+> **In one sentence:** What exactly are we building?
 
-</details>
+#### 3. Clarify — Resolve ambiguity before design
 
-<details>
-<summary><strong>3. Clarify — Resolve ambiguity before design</strong></summary>
+[`speckit-clarify`](./skills/speckit-clarify/SKILL.md)
 
-**Skill:** [`speckit-clarify`](./skills/speckit-clarify/SKILL.md)
+**What it does**
 
-**What it does**  
-Examines the current specification for ambiguity, missing decisions, edge cases, and assumptions, then asks focused questions to resolve them.
+Examines the current specification for ambiguity, missing decisions, edge cases, and hidden assumptions, then asks focused questions to resolve them.
 
-**When to use it**
+**Best used when**
+
 - A specification already exists
 - Important boundary conditions are still undefined
 - Different interpretations could lead to different implementations
-- You want to avoid discovering requirement gaps during coding
+- You want to catch requirement gaps before coding starts
 
-**Example questions**
+**Example**
 
 ```text
 What happens when GitHub OAuth fails?
@@ -182,19 +181,18 @@ Can one GitHub identity be linked to multiple accounts?
 Should disabling a user immediately invalidate active sessions?
 ```
 
-Think of it as: **What have we not made clear yet?**
+> **In one sentence:** What have we not made clear yet?
 
-</details>
+#### 4. Plan — Design how to build it
 
-<details>
-<summary><strong>4. Plan — Design how to build it</strong></summary>
+[`speckit-plan`](./skills/speckit-plan/SKILL.md)
 
-**Skill:** [`speckit-plan`](./skills/speckit-plan/SKILL.md)
+**What it does**
 
-**What it does**  
 Turns the approved specification into a technical implementation plan covering architecture, components, data model, interfaces, constraints, and implementation approach.
 
-**When to use it**
+**Best used when**
+
 - Requirements are sufficiently clear
 - You are ready to make technical decisions
 - The feature spans multiple components or needs architectural thought
@@ -209,22 +207,21 @@ Plan GitHub OAuth using:
 - An admin endpoint for disabling users
 ```
 
-Think of it as: **How are we going to build this?**
+> **In one sentence:** How are we going to build this?
 
-</details>
+#### 5. Tasks — Break the plan into executable work
 
-<details>
-<summary><strong>5. Tasks — Break the plan into executable work</strong></summary>
+[`speckit-tasks`](./skills/speckit-tasks/SKILL.md)
 
-**Skill:** [`speckit-tasks`](./skills/speckit-tasks/SKILL.md)
+**What it does**
 
-**What it does**  
 Converts the implementation plan into concrete development tasks, including useful ordering and dependencies.
 
-**When to use it**
+**Best used when**
+
 - The technical plan is complete
 - You are preparing to start implementation
-- The work needs to be divided across phases, contributors, or agents
+- Work needs to be divided across phases, contributors, or agents
 
 **Example**
 
@@ -236,25 +233,24 @@ T004 Add administrator disable-user API
 T005 Add integration tests
 ```
 
-Think of it as: **What exactly needs to be done, and in what order?**
+> **In one sentence:** What needs to be done, and in what order?
 
-</details>
+#### 6. Analyze — Check consistency before implementation
 
-<details>
-<summary><strong>6. Analyze — Check consistency before implementation</strong></summary>
+[`speckit-analyze`](./skills/speckit-analyze/SKILL.md)
 
-**Skill:** [`speckit-analyze`](./skills/speckit-analyze/SKILL.md)
+**What it does**
 
-**What it does**  
 Performs a non-destructive consistency and coverage review across the specification, plan, and tasks.
 
-**When to use it**
+**Best used when**
+
 - Specification, plan, and tasks are already available
 - Before starting a significant implementation
 - After major requirement or design changes
-- When you want to catch missing, duplicated, or conflicting work early
+- You want to catch missing, duplicated, or conflicting work early
 
-**Example checks**
+**Example**
 
 ```text
 Does every requirement have a corresponding design decision?
@@ -263,19 +259,18 @@ Are there tasks that are not justified by the specification?
 Are any requirements contradicted by the technical plan?
 ```
 
-Think of it as: **Do the requirements, design, and tasks actually line up?**
+> **In one sentence:** Do the requirements, design, and tasks actually line up?
 
-</details>
+#### 7. Implement — Turn the prepared tasks into code
 
-<details>
-<summary><strong>7. Implement — Turn the prepared tasks into code</strong></summary>
+[`speckit-implement`](./skills/speckit-implement/SKILL.md)
 
-**Skill:** [`speckit-implement`](./skills/speckit-implement/SKILL.md)
+**What it does**
 
-**What it does**  
 Executes the implementation based on the prepared task list and the artifacts created earlier in the Spec Kit workflow.
 
-**When to use it**
+**Best used when**
+
 - Specification, plan, and tasks are ready
 - Necessary clarification and analysis are complete
 - You are ready for the agent to make code changes
@@ -287,19 +282,18 @@ Implement the authentication feature from tasks.md,
 following the architecture and constraints defined in plan.md.
 ```
 
-Think of it as: **Turn the plan into working code.**
+> **In one sentence:** Turn the plan into working code.
 
-</details>
+#### 8. Converge — Verify the implementation is truly complete
 
-<details>
-<summary><strong>8. Converge — Verify the implementation is truly complete</strong></summary>
+[`speckit-converge`](./skills/speckit-converge/SKILL.md)
 
-**Skill:** [`speckit-converge`](./skills/speckit-converge/SKILL.md)
+**What it does**
 
-**What it does**  
 Compares the current implementation against the specification and related artifacts, identifies remaining gaps, and helps finish incomplete work.
 
-**When to use it**
+**Best used when**
+
 - A first implementation pass is complete
 - The feature looks done but you want a specification-level check
 - Requirements changed during development
@@ -313,26 +307,24 @@ Identify unmet acceptance criteria, missing edge cases,
 and any tasks that still need to be completed.
 ```
 
-Think of it as: **The code exists — does it actually satisfy the specification?**
-
-</details>
+> **In one sentence:** The code exists — does it actually satisfy the specification?
 
 ### Supporting Skills
 
-<details>
-<summary><strong>Checklist — Generate focused quality checks</strong></summary>
+#### Checklist — Generate focused quality checks
 
-**Skill:** [`speckit-checklist`](./skills/speckit-checklist/SKILL.md)
+[`speckit-checklist`](./skills/speckit-checklist/SKILL.md)
 
-**What it does**  
+**What it does**
+
 Generates a checklist tailored to the current feature and the type of review you want to perform.
 
-**When to use it**
-- Requirement review
-- Design review
-- Code review
-- Pre-release validation
-- Security, performance, or other focused quality gates
+**Best used when**
+
+- Reviewing requirements or design
+- Performing code review
+- Preparing for a release
+- Running a security, performance, or other focused quality gate
 
 **Example**
 
@@ -342,20 +334,21 @@ covering authentication failures, session invalidation,
 security-sensitive logging, and regression tests.
 ```
 
-</details>
+> **In one sentence:** What should we verify before moving forward?
 
-<details>
-<summary><strong>Tasks to Issues — Move execution into GitHub Issues</strong></summary>
+#### Tasks to Issues — Move execution into GitHub Issues
 
-**Skill:** [`speckit-taskstoissues`](./skills/speckit-taskstoissues/SKILL.md)
+[`speckit-taskstoissues`](./skills/speckit-taskstoissues/SKILL.md)
 
-**What it does**  
-Converts the prepared task list into dependency-aware GitHub Issues so the work can be tracked and coordinated in GitHub.
+**What it does**
 
-**When to use it**
-- Team development
-- GitHub Projects or Issue-driven workflows
-- Work shared across multiple agents
+Converts the prepared task list into dependency-aware GitHub Issues so work can be tracked and coordinated in GitHub.
+
+**Best used when**
+
+- Working as a team
+- Using GitHub Projects or an Issue-driven workflow
+- Coordinating work across multiple agents
 - You want task dependencies visible in GitHub
 
 **Example**
@@ -366,7 +359,7 @@ preserving dependencies so session management cannot start
 before the user and OAuth identity models are ready.
 ```
 
-</details>
+> **In one sentence:** How do we turn the task plan into trackable GitHub work?
 
 ## Recommended workflow
 
@@ -391,6 +384,7 @@ before the user and OAuth identity models are ready.
 You do **not** need to run every Skill for every project. Use the steps that match the size, risk, and maturity of the work.
 
 Supporting Skills can be inserted where needed:
+
 - **Checklist** at requirement, design, code-review, or release gates
 - **Tasks to Issues** when work should be coordinated through GitHub
 
