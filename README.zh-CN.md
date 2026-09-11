@@ -4,7 +4,7 @@
 
 **可直接使用的 [GitHub Spec Kit](https://github.com/github/spec-kit) Skills，适用于 CC Switch 及其他支持 Skills 的 AI 编程 Agent。**
 
-无需在本地生成，无需手动维护。仓库会持续跟随 GitHub Spec Kit 的稳定版本更新。
+无需在本地生成，无需手动维护。持续跟随 GitHub Spec Kit 的稳定版本。
 
 [English](./README.md) · [简体中文](./README.zh-CN.md)
 
@@ -43,18 +43,18 @@ Implementation
 Convergence
 ```
 
-本仓库将 Spec Kit 官方 Codex 集成生成的 Skills 整理为一套**可直接消费的 Skills 仓库**。你可以直接把本仓库加入 CC Switch 或其他兼容工具，而无需自己在本地生成和维护这些 Skills。
+本仓库将 Spec Kit 官方 Codex 集成生成的 Skills 整理为一套**可直接使用的 Skills 仓库**。你可以直接把本仓库加入 CC Switch 或其他兼容工具，而无需自己在本地生成和维护这些 Skills。
 
 ## 为什么使用这个仓库？
 
 | | 特性 | 你能获得什么 |
 |---|---|---|
 | 🚀 | **开箱即用** | 添加仓库后即可直接使用 Skills。 |
-| 🔄 | **自动更新** | 持续跟随 GitHub Spec Kit 的稳定版本。 |
-| 📦 | **版本化发布** | 每个同步版本都有对应的 GitHub Release。 |
+| 🔄 | **持续更新** | 跟随 GitHub Spec Kit 的稳定版本。 |
+| 📦 | **版本化发布** | 对应版本可直接通过 GitHub Release 获取。 |
 | ⬇️ | **可下载安装包** | 提供 ZIP、tar.gz 和 SHA-256 校验文件。 |
 | 🔗 | **适合 CC Switch** | 可直接作为 CC Switch 的自定义 Skills 仓库。 |
-| 🤖 | **Agent 友好** | Skills 采用 `skills/<skill-name>/SKILL.md` 结构。 |
+| 🤖 | **Agent 友好** | Skills 使用标准的 `skills/<skill-name>/SKILL.md` 目录结构。 |
 | 🧩 | **完整工作流** | 覆盖需求、澄清、计划、任务、分析、实现和收敛。 |
 
 ## 快速开始
@@ -72,7 +72,7 @@ Skills Path: skills
 
 ### 下载固定版本
 
-如果你希望固定版本，而不是直接跟随 `main`，可以从这里下载：
+如果希望固定版本，而不是直接跟随 `main`，可以从这里下载：
 
 **[查看最新 Release →](https://github.com/MuYiYong/spec-kit-skills/releases/latest)**
 
@@ -86,7 +86,7 @@ SHA256SUMS
 
 ## Available Skills
 
-### 主流程 Skills
+### 总览
 
 | Skill | 作用 |
 |---|---|
@@ -95,18 +95,277 @@ SHA256SUMS
 | [`speckit-clarify`](./skills/speckit-clarify/SKILL.md) | 识别需求中的歧义、缺失决策和不明确内容。 |
 | [`speckit-plan`](./skills/speckit-plan/SKILL.md) | 根据 Specification 生成技术实现方案。 |
 | [`speckit-tasks`](./skills/speckit-tasks/SKILL.md) | 将实现计划拆分为有顺序和依赖关系的可执行任务。 |
+| [`speckit-checklist`](./skills/speckit-checklist/SKILL.md) | 根据当前 Feature 生成有针对性的质量检查清单。 |
 | [`speckit-analyze`](./skills/speckit-analyze/SKILL.md) | 检查 Specification、Plan 和 Tasks 的覆盖与一致性。 |
-| [`speckit-implement`](./skills/speckit-implement/SKILL.md) | 根据任务列表执行实际开发工作。 |
-| [`speckit-converge`](./skills/speckit-converge/SKILL.md) | 对比实现与 Specification，补齐仍未完成的工作。 |
+| [`speckit-implement`](./skills/speckit-implement/SKILL.md) | 根据已经准备好的 Tasks 执行实际开发工作。 |
+| [`speckit-converge`](./skills/speckit-converge/SKILL.md) | 对比实现与 Specification，补齐尚未完成的工作。 |
+| [`speckit-taskstoissues`](./skills/speckit-taskstoissues/SKILL.md) | 将 Tasks 转换成具有依赖关系的 GitHub Issues。 |
+
+> 当前实际可用的 Skills 以 [`skills/`](./skills) 目录为准。
+
+## Skill 使用指南
+
+### 主流程 Skills
+
+<details>
+<summary><strong>1. Constitution — 定义项目规则</strong></summary>
+
+**Skill：** [`speckit-constitution`](./skills/speckit-constitution/SKILL.md)
+
+**作用**  
+定义或更新项目需要长期遵守的原则和约束，让 AI Agent 在统一的工程规则下做决策。
+
+**适合什么时候使用**
+- 新项目刚开始
+- 希望统一架构或编码原则
+- 需要明确测试、安全、质量或治理要求
+- 多个 Agent 或多人协作，需要统一长期约束
+
+**示例**
+
+```text
+为项目定义以下规则：
+- 应用代码统一使用 TypeScript
+- 所有公开 API 都必须有测试
+- 数据库迁移必须保持向后兼容
+- 不允许在源码中直接保存 Secret
+```
+
+可以把它理解成：**这个项目开发时必须遵守什么规则？**
+
+</details>
+
+<details>
+<summary><strong>2. Specify — 把想法整理成清晰需求</strong></summary>
+
+**Skill：** [`speckit-specify`](./skills/speckit-specify/SKILL.md)
+
+**作用**  
+把自然语言功能想法整理成结构化的 Feature Specification，重点描述用户需求、预期行为和验收标准。
+
+**适合什么时候使用**
+- 已经有功能想法，但还没有正式需求文档
+- 需求散落在聊天、笔记或口头描述里
+- 希望先明确范围，再讨论技术实现
+
+**示例**
+
+```text
+增加 GitHub OAuth 登录。
+管理员可以禁用用户，
+被禁用的用户不能继续访问应用。
+```
+
+可以把它理解成：**我们到底要做什么？**
+
+</details>
+
+<details>
+<summary><strong>3. Clarify — 在设计之前解决歧义</strong></summary>
+
+**Skill：** [`speckit-clarify`](./skills/speckit-clarify/SKILL.md)
+
+**作用**  
+检查当前 Specification 中不明确、缺失、存在歧义或依赖隐含假设的内容，并通过有针对性的问题补充完整。
+
+**适合什么时候使用**
+- Specification 已经生成
+- 还有重要边界条件没有定义
+- 不同理解会导致不同的实现方式
+- 不希望问题拖到编码阶段才暴露
+
+**示例问题**
+
+```text
+GitHub OAuth 登录失败后如何处理？
+一个 GitHub 身份是否可以绑定多个账号？
+管理员禁用用户后，已有 Session 是否立即失效？
+```
+
+可以把它理解成：**还有哪些事情没有真正说清楚？**
+
+</details>
+
+<details>
+<summary><strong>4. Plan — 设计怎么实现</strong></summary>
+
+**Skill：** [`speckit-plan`](./skills/speckit-plan/SKILL.md)
+
+**作用**  
+根据已经明确的 Specification 生成技术实现方案，覆盖架构、组件、数据模型、接口、约束和实现路径。
+
+**适合什么时候使用**
+- 需求已经基本明确
+- 可以开始做技术决策
+- 功能涉及多个组件或需要架构设计
+
+**示例**
+
+```text
+为 GitHub OAuth 功能设计：
+- /auth/github 和 /auth/github/callback 接口
+- User 与 OAuthIdentity 数据表
+- 服务端 Session 存储
+- 管理员禁用用户 API
+```
+
+可以把它理解成：**这个需求准备怎么做？**
+
+</details>
+
+<details>
+<summary><strong>5. Tasks — 拆成可以真正执行的任务</strong></summary>
+
+**Skill：** [`speckit-tasks`](./skills/speckit-tasks/SKILL.md)
+
+**作用**  
+将实现计划拆解成具体开发任务，并整理合理的执行顺序和依赖关系。
+
+**适合什么时候使用**
+- 技术方案已经完成
+- 准备正式进入开发阶段
+- 工作需要按阶段、多人或多 Agent 拆分
+
+**示例**
+
+```text
+T001 创建 User 和 OAuthIdentity 数据模型
+T002 实现 GitHub OAuth Callback
+T003 实现 Session 管理
+T004 增加管理员禁用用户 API
+T005 增加集成测试
+```
+
+可以把它理解成：**具体要做哪些事情？先做什么，后做什么？**
+
+</details>
+
+<details>
+<summary><strong>6. Analyze — 开发前检查一致性</strong></summary>
+
+**Skill：** [`speckit-analyze`](./skills/speckit-analyze/SKILL.md)
+
+**作用**  
+对 Specification、Plan 和 Tasks 做非破坏性的一致性与覆盖检查。
+
+**适合什么时候使用**
+- Specification、Plan 和 Tasks 已经准备好
+- 开始重要实现之前
+- 需求或设计发生较大变化之后
+- 希望提前发现遗漏、重复或冲突
+
+**示例检查**
+
+```text
+每一条需求是否都有对应设计？
+Plan 中的每个组件是否都有实现任务？
+是否存在与 Specification 无关的额外任务？
+技术方案是否与原始需求发生冲突？
+```
+
+可以把它理解成：**需求、设计和任务真的对得上吗？**
+
+</details>
+
+<details>
+<summary><strong>7. Implement — 把任务真正变成代码</strong></summary>
+
+**Skill：** [`speckit-implement`](./skills/speckit-implement/SKILL.md)
+
+**作用**  
+根据已经准备好的任务列表，以及前面生成的 Spec Kit 工件，执行实际开发工作。
+
+**适合什么时候使用**
+- Specification、Plan 和 Tasks 都已准备好
+- 必要的 Clarify 和 Analyze 已经完成
+- 准备让 Agent 正式修改代码
+
+**示例**
+
+```text
+按照 tasks.md 实现认证功能，
+并遵循 plan.md 中定义的架构和约束。
+```
+
+可以把它理解成：**现在开始把计划变成代码。**
+
+</details>
+
+<details>
+<summary><strong>8. Converge — 检查是否真正完成</strong></summary>
+
+**Skill：** [`speckit-converge`](./skills/speckit-converge/SKILL.md)
+
+**作用**  
+重新对比当前实现、Specification 和相关工件，识别遗漏并补齐尚未完成的工作。
+
+**适合什么时候使用**
+- 已经完成一轮 Implement
+- 功能看起来做完了，但希望从需求层面再检查一次
+- 开发过程中需求发生过变化
+- Review 或 Release 前希望补齐最后的差距
+
+**示例**
+
+```text
+将当前 OAuth 实现与 Specification 进行对比。
+找出未满足的验收条件、遗漏的边界场景，
+以及仍然没有完成的任务。
+```
+
+可以把它理解成：**代码写完了，但需求真的全部完成了吗？**
+
+</details>
 
 ### 辅助 Skills
 
-| Skill | 作用 |
-|---|---|
-| [`speckit-checklist`](./skills/speckit-checklist/SKILL.md) | 为当前 Feature 生成需求、设计、代码审查或发布检查清单。 |
-| [`speckit-taskstoissues`](./skills/speckit-taskstoissues/SKILL.md) | 将 Tasks 转换为具有依赖关系的 GitHub Issues，适合团队或多 Agent 协作。 |
+<details>
+<summary><strong>Checklist — 生成有针对性的质量检查清单</strong></summary>
 
-> 当前实际可用的 Skills 以 [`skills/`](./skills) 目录为准。
+**Skill：** [`speckit-checklist`](./skills/speckit-checklist/SKILL.md)
+
+**作用**  
+根据当前 Feature 和你希望执行的 Review 类型生成对应检查清单。
+
+**适合什么时候使用**
+- 需求评审
+- 设计评审
+- Code Review
+- Release 前检查
+- 安全、性能等专项质量检查
+
+**示例**
+
+```text
+为 GitHub OAuth 功能生成 Release Readiness Checklist，
+重点覆盖认证失败、Session 失效、敏感日志和回归测试。
+```
+
+</details>
+
+<details>
+<summary><strong>Tasks to Issues — 把任务转成 GitHub Issues</strong></summary>
+
+**Skill：** [`speckit-taskstoissues`](./skills/speckit-taskstoissues/SKILL.md)
+
+**作用**  
+将已经生成的 Tasks 转换成带依赖关系的 GitHub Issues，方便在 GitHub 中继续跟踪和协作。
+
+**适合什么时候使用**
+- 团队开发
+- 使用 GitHub Projects 或 Issue 驱动开发
+- 多 Agent 协作
+- 希望在 GitHub 中明确展示任务依赖
+
+**示例**
+
+```text
+将认证相关 Tasks 转换成 GitHub Issues，
+并保留依赖关系：只有 User 和 OAuthIdentity 数据模型完成后，
+才能开始 Session 管理相关工作。
+```
+
+</details>
 
 ## 推荐工作流
 
@@ -130,41 +389,28 @@ SHA256SUMS
 
 并不是每个项目都必须执行全部步骤。可以根据项目规模、风险和成熟度选择需要的 Skill。
 
-### 辅助 Skills 适合放在哪里？
+辅助 Skills 可以按需要插入：
+- **Checklist**：适合需求、设计、代码评审和 Release 前检查
+- **Tasks to Issues**：适合需要通过 GitHub 管理和协作的工作
 
-- **Checklist**：适合用于需求评审、设计评审、代码评审和发布前检查。
-- **Tasks to Issues**：适合团队开发、GitHub Project、Issue 驱动开发以及多 Agent 协作。
+## Releases
 
-## Releases 与版本对应
+本仓库使用与上游 Spec Kit 稳定版本一致的版本号，方便将某个 Skills Bundle 固定到明确的上游版本。
 
-本仓库与上游 Spec Kit 的稳定版本保持一致：
+**[查看最新 Release →](https://github.com/MuYiYong/spec-kit-skills/releases/latest)**
+
+可下载文件：
 
 ```text
-GitHub Spec Kit                 spec-kit-skills
-     v1.0.6          ───────▶        v1.0.6
-     v1.0.7          ───────▶        v1.0.7
-       ...                             ...
+spec-kit-skills-vX.Y.Z.zip
+spec-kit-skills-vX.Y.Z.tar.gz
+SHA256SUMS
 ```
-
-每次同步会自动执行：
-
-1. 检查 [`github/spec-kit`](https://github.com/github/spec-kit) 最新稳定 Release。
-2. 使用对应上游版本生成官方 Codex Skills。
-3. 更新 `skills/` 和 [`UPSTREAM_VERSION`](./UPSTREAM_VERSION)。
-4. 创建对应 Git tag 和 GitHub Release。
-5. 发布 ZIP、tar.gz 和 SHA-256 校验文件作为 Release Assets。
-
-Workflow 每天检查一次上游。如果没有新稳定版本，并且对应 Release 已经存在，就不会重复发布。
-
-> 安装包使用 **GitHub Release Assets** 发布。这里不使用 GitHub Packages，因为这些文件属于可下载的 Skills Bundle，而不是 npm、Maven、NuGet、RubyGems 或容器镜像等 Registry Package。
 
 ## 仓库结构
 
 ```text
 spec-kit-skills/
-├── .github/
-│   └── workflows/
-│       └── sync-spec-kit.yml
 ├── skills/
 │   ├── speckit-analyze/
 │   │   └── SKILL.md
@@ -203,11 +449,11 @@ spec-kit-skills/
 
 ## 与 GitHub Spec Kit 的关系
 
-本仓库是一个**由社区维护的 Spec Kit Skills 分发镜像**。Spec Kit 本身由 GitHub 维护：
+本仓库是一个**由社区维护的 Spec Kit Skills 分发仓库**。Spec Kit 本身由 GitHub 维护：
 
 **[github/spec-kit →](https://github.com/github/spec-kit)**
 
-如果你需要了解 Spec-Driven Development、Spec Kit CLI、模板机制、上游 Bug 或 Feature Request，请以官方项目为准。
+如果需要了解 Spec-Driven Development、Spec Kit CLI、模板机制、上游 Bug 或 Feature Request，请以官方项目为准。
 
 ## Disclaimer
 
