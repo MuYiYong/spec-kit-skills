@@ -103,6 +103,33 @@ SHA256SUMS
 
 > 当前实际可用的 Skills 以 [`skills/`](./skills) 目录为准。
 
+## 推荐工作流
+
+```text
+1. Constitution   定义项目规则和长期约束
+        ↓
+2. Specify        描述要做什么
+        ↓
+3. Clarify        解决歧义和缺失决策
+        ↓
+4. Plan           设计怎么实现
+        ↓
+5. Tasks          拆成可执行工作
+        ↓
+6. Analyze        检查需求 / 设计 / 任务是否一致
+        ↓
+7. Implement      开始实现
+        ↓
+8. Converge       检查实现是否真正满足需求
+```
+
+并不是每个项目都必须执行全部步骤。可以根据项目规模、风险和成熟度选择需要的 Skill。
+
+辅助 Skills 可以按需要插入：
+
+- **Checklist**：适合需求、设计、代码评审和 Release 前检查
+- **Tasks to Issues**：适合需要通过 GitHub 管理和协作的工作
+
 ## Skill 使用指南
 
 ### 主流程 Skills
@@ -132,6 +159,14 @@ SHA256SUMS
 - 不允许在源码中直接保存 Secret
 ```
 
+**使用示例**
+
+```text
+请使用 speckit-constitution，为当前项目建立以下工程原则：
+应用代码统一使用 TypeScript，所有公开 API 都必须有测试，
+数据库迁移保持向后兼容，并禁止将 Secret 提交到源码仓库。
+```
+
 > **一句话理解：** 这个项目开发时必须遵守什么规则？
 
 #### 2. Specify — 把想法整理成清晰需求
@@ -154,6 +189,14 @@ SHA256SUMS
 增加 GitHub OAuth 登录。
 管理员可以禁用用户，
 被禁用的用户不能继续访问应用。
+```
+
+**使用示例**
+
+```text
+请使用 speckit-specify，把下面需求整理成完整的 Feature Specification：
+增加 GitHub OAuth 登录。管理员可以禁用用户，
+被禁用用户不能继续访问应用。
 ```
 
 > **一句话理解：** 我们到底要做什么？
@@ -179,6 +222,13 @@ SHA256SUMS
 GitHub OAuth 登录失败后如何处理？
 一个 GitHub 身份是否可以绑定多个账号？
 管理员禁用用户后，已有 Session 是否立即失效？
+```
+
+**使用示例**
+
+```text
+请使用 speckit-clarify 检查当前认证功能的 Specification。
+只提出在进入技术设计之前必须明确的问题，并帮助补齐缺失的边界条件。
 ```
 
 > **一句话理解：** 还有哪些事情没有真正说清楚？
@@ -207,6 +257,13 @@ GitHub OAuth 登录失败后如何处理？
 - 管理员禁用用户 API
 ```
 
+**使用示例**
+
+```text
+请使用 speckit-plan，根据当前 Specification 生成技术实现方案。
+需要覆盖架构、数据模型、API、依赖、测试策略以及主要技术风险。
+```
+
 > **一句话理解：** 这个需求准备怎么做？
 
 #### 5. Tasks — 拆成可以真正执行的任务
@@ -231,6 +288,13 @@ T002 实现 GitHub OAuth Callback
 T003 实现 Session 管理
 T004 增加管理员禁用用户 API
 T005 增加集成测试
+```
+
+**使用示例**
+
+```text
+请使用 speckit-tasks，把当前 Plan 拆成可以直接执行的开发任务。
+保留任务依赖关系，并标出可以并行执行的任务。
 ```
 
 > **一句话理解：** 具体要做哪些事情？先做什么，后做什么？
@@ -259,6 +323,14 @@ Plan 中的每个组件是否都有实现任务？
 技术方案是否与原始需求发生冲突？
 ```
 
+**使用示例**
+
+```text
+请使用 speckit-analyze，检查当前 Specification、Plan 和 Tasks。
+找出缺失覆盖、冲突、重复任务以及不必要的工作，
+确保开始实现前三者保持一致。
+```
+
 > **一句话理解：** 需求、设计和任务真的对得上吗？
 
 #### 7. Implement — 把任务真正变成代码
@@ -280,6 +352,13 @@ Plan 中的每个组件是否都有实现任务？
 ```text
 按照 tasks.md 实现认证功能，
 并遵循 plan.md 中定义的架构和约束。
+```
+
+**使用示例**
+
+```text
+请使用 speckit-implement 执行当前 tasks.md。
+按照任务依赖顺序完成实现，并始终遵循 Specification 和 Plan 中定义的约束。
 ```
 
 > **一句话理解：** 现在开始把计划变成代码。
@@ -305,6 +384,13 @@ Plan 中的每个组件是否都有实现任务？
 将当前 OAuth 实现与 Specification 进行对比。
 找出未满足的验收条件、遗漏的边界场景，
 以及仍然没有完成的任务。
+```
+
+**使用示例**
+
+```text
+请使用 speckit-converge，对比当前实现、Specification、Plan 和 Tasks。
+找出还没有满足的需求或遗漏的工作，并继续补齐直到实现收敛。
 ```
 
 > **一句话理解：** 代码写完了，但需求真的全部完成了吗？
@@ -334,6 +420,13 @@ Plan 中的每个组件是否都有实现任务？
 重点覆盖认证失败、Session 失效、敏感日志和回归测试。
 ```
 
+**使用示例**
+
+```text
+请使用 speckit-checklist，为这个功能生成 Release Readiness Checklist。
+重点检查认证失败、Session 失效、敏感日志以及回归测试覆盖。
+```
+
 > **一句话理解：** 在进入下一阶段之前，需要检查哪些事情？
 
 #### Tasks to Issues — 把任务转成 GitHub Issues
@@ -359,34 +452,14 @@ Plan 中的每个组件是否都有实现任务？
 才能开始 Session 管理相关工作。
 ```
 
-> **一句话理解：** 如何把任务计划变成可以在 GitHub 中跟踪的工作？
-
-## 推荐工作流
+**使用示例**
 
 ```text
-1. Constitution   定义项目规则和长期约束
-        ↓
-2. Specify        描述要做什么
-        ↓
-3. Clarify        解决歧义和缺失决策
-        ↓
-4. Plan           设计怎么实现
-        ↓
-5. Tasks          拆成可执行工作
-        ↓
-6. Analyze        检查需求 / 设计 / 任务是否一致
-        ↓
-7. Implement      开始实现
-        ↓
-8. Converge       检查实现是否真正满足需求
+请使用 speckit-taskstoissues，把当前 Tasks 转换成 GitHub Issues。
+保留任务之间的依赖关系，并确保每个 Issue 都可以独立执行和跟踪。
 ```
 
-并不是每个项目都必须执行全部步骤。可以根据项目规模、风险和成熟度选择需要的 Skill。
-
-辅助 Skills 可以按需要插入：
-
-- **Checklist**：适合需求、设计、代码评审和 Release 前检查
-- **Tasks to Issues**：适合需要通过 GitHub 管理和协作的工作
+> **一句话理解：** 如何把任务计划变成可以在 GitHub 中跟踪的工作？
 
 ## Releases
 
