@@ -1,0 +1,261 @@
+name: Sync Spec Kit Skills
+
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force regeneration even when the upstream version has not changed"
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/sync-spec-kit.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-spec-kit-skills
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect latest Spec Kit release
+        id: upstream
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORCE_SYNC: ${{ github.event_name == 'workflow_dispatch' && inputs.force || false }}
+        run: |
+          set -euo pipefail
+
+          tag="$(curl --fail --silent --show-error \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/github/spec-kit/releases/latest \
+            | jq -r '.tag_name // empty')"
+
+          if [[ -z "${tag}" || "${tag}" == "null" ]]; then
+            echo "Unable to resolve github/spec-kit latest release tag" >&2
+            exit 1
+          fi
+
+          current="uninitialized"
+          if [[ -f UPSTREAM_VERSION ]]; then
+            current="$(tr -d '[:space:]' < UPSTREAM_VERSION)"
+          fi
+
+          release_http="$(curl --silent --show-error \
+            -o "${RUNNER_TEMP}/release.json" \
+            -w '%{http_code}' \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/tags/${tag}")"
+
+          case "${release_http}" in
+            200) release_exists=true ;;
+            404) release_exists=false ;;
+            *)
+              cat "${RUNNER_TEMP}/release.json" >&2 || true
+              echo "Unable to check release ${tag}; HTTP ${release_http}" >&2
+              exit 1
+              ;;
+          esac
+
+          needs_sync=false
+          if [[ "${tag}" != "${current}" || "${FORCE_SYNC}" == "true" ]]; then
+            needs_sync=true
+          fi
+
+          needs_release=false
+          if [[ "${release_exists}" != "true" || "${needs_sync}" == "true" ]]; then
+            needs_release=true
+          fi
+
+          echo "Latest upstream release: ${tag}"
+          echo "Current mirrored release: ${current}"
+          echo "Release exists: ${release_exists}"
+          echo "Needs sync: ${needs_sync}"
+          echo "Needs release publication: ${needs_release}"
+
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+          echo "release_exists=${release_exists}" >> "${GITHUB_OUTPUT}"
+          echo "needs_sync=${needs_sync}" >> "${GITHUB_OUTPUT}"
+          echo "needs_release=${needs_release}" >> "${GITHUB_OUTPUT}"
+
+      - name: Install uv
+        if: steps.upstream.outputs.needs_sync == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
+
+      - name: Generate official Codex skills
+        if: steps.upstream.outputs.needs_sync == 'true'
+        shell: bash
+        env:
+          SPEC_KIT_TAG: ${{ steps.upstream.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          generated="${RUNNER_TEMP}/spec-kit-generated"
+          rm -rf "${generated}"
+
+          uvx --from "git+https://github.com/github/spec-kit.git@${SPEC_KIT_TAG}" \
+            specify init "${generated}" \
+            --integration codex \
+            --non-interactive \
+            --ignore-agent-tools
+
+          source_skills="${generated}/.agents/skills"
+          if [[ ! -d "${source_skills}" ]]; then
+            echo "Spec Kit did not generate ${source_skills}" >&2
+            exit 1
+          fi
+
+          rm -rf skills
+          mkdir -p skills
+          cp -a "${source_skills}/." skills/
+
+      - name: Validate generated skills
+        if: steps.upstream.outputs.needs_sync == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          required=(
+            "skills/speckit-constitution/SKILL.md"
+            "skills/speckit-specify/SKILL.md"
+            "skills/speckit-plan/SKILL.md"
+            "skills/speckit-tasks/SKILL.md"
+            "skills/speckit-implement/SKILL.md"
+            "skills/speckit-converge/SKILL.md"
+          )
+
+          for path in "${required[@]}"; do
+            if [[ ! -s "${path}" ]]; then
+              echo "Missing or empty required skill: ${path}" >&2
+              exit 1
+            fi
+          done
+
+          skill_count="$(find skills -type f -name SKILL.md | wc -l | tr -d '[:space:]')"
+          if [[ "${skill_count}" -lt 1 ]]; then
+            echo "No SKILL.md files were generated" >&2
+            exit 1
+          fi
+
+          echo "Validated ${skill_count} generated skills"
+
+      - name: Update upstream version marker
+        if: steps.upstream.outputs.needs_sync == 'true'
+        shell: bash
+        env:
+          SPEC_KIT_TAG: ${{ steps.upstream.outputs.tag }}
+        run: |
+          set -euo pipefail
+          printf '%s\n' "${SPEC_KIT_TAG}" > UPSTREAM_VERSION
+
+      - name: Commit and push changes
+        if: steps.upstream.outputs.needs_sync == 'true'
+        shell: bash
+        env:
+          SPEC_KIT_TAG: ${{ steps.upstream.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if ! git diff --quiet -- skills UPSTREAM_VERSION; then
+            git add skills UPSTREAM_VERSION
+            git commit -m "chore: sync spec-kit ${SPEC_KIT_TAG}"
+            git push origin HEAD:main
+          else
+            echo "Generated output is unchanged; nothing to commit."
+          fi
+
+      - name: Build release assets
+        if: steps.upstream.outputs.needs_release == 'true'
+        shell: bash
+        env:
+          SPEC_KIT_TAG: ${{ steps.upstream.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          package_name="spec-kit-skills-${SPEC_KIT_TAG}"
+          package_dir="${RUNNER_TEMP}/${package_name}"
+          rm -rf "${package_dir}"
+          mkdir -p "${package_dir}"
+
+          cp -a skills "${package_dir}/skills"
+          cp README.md UPSTREAM_VERSION "${package_dir}/"
+
+          (
+            cd "${RUNNER_TEMP}"
+            zip -qr "${GITHUB_WORKSPACE}/${package_name}.zip" "${package_name}"
+            tar -czf "${GITHUB_WORKSPACE}/${package_name}.tar.gz" "${package_name}"
+          )
+
+          sha256sum \
+            "${package_name}.zip" \
+            "${package_name}.tar.gz" \
+            > SHA256SUMS
+
+      - name: Publish GitHub Release
+        if: steps.upstream.outputs.needs_release == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SPEC_KIT_TAG: ${{ steps.upstream.outputs.tag }}
+          RELEASE_EXISTS: ${{ steps.upstream.outputs.release_exists }}
+        run: |
+          set -euo pipefail
+
+          package_name="spec-kit-skills-${SPEC_KIT_TAG}"
+          release_sha="$(git rev-parse HEAD)"
+          notes="$(cat <<EOF_NOTES
+          Automatically generated Codex skills for upstream Spec Kit ${SPEC_KIT_TAG}.
+
+          Upstream release: https://github.com/github/spec-kit/releases/tag/${SPEC_KIT_TAG}
+
+          Assets:
+          - ${package_name}.zip
+          - ${package_name}.tar.gz
+          - SHA256SUMS
+          EOF_NOTES
+          )"
+
+          if [[ "${RELEASE_EXISTS}" == "true" ]]; then
+            gh release upload "${SPEC_KIT_TAG}" \
+              "${package_name}.zip" \
+              "${package_name}.tar.gz" \
+              SHA256SUMS \
+              --clobber \
+              --repo "${GITHUB_REPOSITORY}"
+          else
+            gh release create "${SPEC_KIT_TAG}" \
+              "${package_name}.zip" \
+              "${package_name}.tar.gz" \
+              SHA256SUMS \
+              --repo "${GITHUB_REPOSITORY}" \
+              --target "${release_sha}" \
+              --title "Spec Kit Skills ${SPEC_KIT_TAG}" \
+              --notes "${notes}"
+          fi
