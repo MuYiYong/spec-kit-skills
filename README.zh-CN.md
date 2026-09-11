@@ -107,15 +107,16 @@ SHA256SUMS
 
 ### 主流程 Skills
 
-<details>
-<summary><strong>1. Constitution — 定义项目规则</strong></summary>
+#### 1. Constitution — 定义项目规则
 
-**Skill：** [`speckit-constitution`](./skills/speckit-constitution/SKILL.md)
+[`speckit-constitution`](./skills/speckit-constitution/SKILL.md)
 
-**作用**  
+**作用**
+
 定义或更新项目需要长期遵守的原则和约束，让 AI Agent 在统一的工程规则下做决策。
 
-**适合什么时候使用**
+**适合场景**
+
 - 新项目刚开始
 - 希望统一架构或编码原则
 - 需要明确测试、安全、质量或治理要求
@@ -131,19 +132,18 @@ SHA256SUMS
 - 不允许在源码中直接保存 Secret
 ```
 
-可以把它理解成：**这个项目开发时必须遵守什么规则？**
+> **一句话理解：** 这个项目开发时必须遵守什么规则？
 
-</details>
+#### 2. Specify — 把想法整理成清晰需求
 
-<details>
-<summary><strong>2. Specify — 把想法整理成清晰需求</strong></summary>
+[`speckit-specify`](./skills/speckit-specify/SKILL.md)
 
-**Skill：** [`speckit-specify`](./skills/speckit-specify/SKILL.md)
+**作用**
 
-**作用**  
 把自然语言功能想法整理成结构化的 Feature Specification，重点描述用户需求、预期行为和验收标准。
 
-**适合什么时候使用**
+**适合场景**
+
 - 已经有功能想法，但还没有正式需求文档
 - 需求散落在聊天、笔记或口头描述里
 - 希望先明确范围，再讨论技术实现
@@ -156,25 +156,24 @@ SHA256SUMS
 被禁用的用户不能继续访问应用。
 ```
 
-可以把它理解成：**我们到底要做什么？**
+> **一句话理解：** 我们到底要做什么？
 
-</details>
+#### 3. Clarify — 在设计之前解决歧义
 
-<details>
-<summary><strong>3. Clarify — 在设计之前解决歧义</strong></summary>
+[`speckit-clarify`](./skills/speckit-clarify/SKILL.md)
 
-**Skill：** [`speckit-clarify`](./skills/speckit-clarify/SKILL.md)
+**作用**
 
-**作用**  
 检查当前 Specification 中不明确、缺失、存在歧义或依赖隐含假设的内容，并通过有针对性的问题补充完整。
 
-**适合什么时候使用**
+**适合场景**
+
 - Specification 已经生成
 - 还有重要边界条件没有定义
-- 不同理解会导致不同的实现方式
+- 不同理解会导致不同实现方式
 - 不希望问题拖到编码阶段才暴露
 
-**示例问题**
+**示例**
 
 ```text
 GitHub OAuth 登录失败后如何处理？
@@ -182,19 +181,18 @@ GitHub OAuth 登录失败后如何处理？
 管理员禁用用户后，已有 Session 是否立即失效？
 ```
 
-可以把它理解成：**还有哪些事情没有真正说清楚？**
+> **一句话理解：** 还有哪些事情没有真正说清楚？
 
-</details>
+#### 4. Plan — 设计怎么实现
 
-<details>
-<summary><strong>4. Plan — 设计怎么实现</strong></summary>
+[`speckit-plan`](./skills/speckit-plan/SKILL.md)
 
-**Skill：** [`speckit-plan`](./skills/speckit-plan/SKILL.md)
+**作用**
 
-**作用**  
 根据已经明确的 Specification 生成技术实现方案，覆盖架构、组件、数据模型、接口、约束和实现路径。
 
-**适合什么时候使用**
+**适合场景**
+
 - 需求已经基本明确
 - 可以开始做技术决策
 - 功能涉及多个组件或需要架构设计
@@ -209,19 +207,18 @@ GitHub OAuth 登录失败后如何处理？
 - 管理员禁用用户 API
 ```
 
-可以把它理解成：**这个需求准备怎么做？**
+> **一句话理解：** 这个需求准备怎么做？
 
-</details>
+#### 5. Tasks — 拆成可以真正执行的任务
 
-<details>
-<summary><strong>5. Tasks — 拆成可以真正执行的任务</strong></summary>
+[`speckit-tasks`](./skills/speckit-tasks/SKILL.md)
 
-**Skill：** [`speckit-tasks`](./skills/speckit-tasks/SKILL.md)
+**作用**
 
-**作用**  
 将实现计划拆解成具体开发任务，并整理合理的执行顺序和依赖关系。
 
-**适合什么时候使用**
+**适合场景**
+
 - 技术方案已经完成
 - 准备正式进入开发阶段
 - 工作需要按阶段、多人或多 Agent 拆分
@@ -236,25 +233,24 @@ T004 增加管理员禁用用户 API
 T005 增加集成测试
 ```
 
-可以把它理解成：**具体要做哪些事情？先做什么，后做什么？**
+> **一句话理解：** 具体要做哪些事情？先做什么，后做什么？
 
-</details>
+#### 6. Analyze — 开发前检查一致性
 
-<details>
-<summary><strong>6. Analyze — 开发前检查一致性</strong></summary>
+[`speckit-analyze`](./skills/speckit-analyze/SKILL.md)
 
-**Skill：** [`speckit-analyze`](./skills/speckit-analyze/SKILL.md)
+**作用**
 
-**作用**  
 对 Specification、Plan 和 Tasks 做非破坏性的一致性与覆盖检查。
 
-**适合什么时候使用**
+**适合场景**
+
 - Specification、Plan 和 Tasks 已经准备好
 - 开始重要实现之前
 - 需求或设计发生较大变化之后
 - 希望提前发现遗漏、重复或冲突
 
-**示例检查**
+**示例**
 
 ```text
 每一条需求是否都有对应设计？
@@ -263,19 +259,18 @@ Plan 中的每个组件是否都有实现任务？
 技术方案是否与原始需求发生冲突？
 ```
 
-可以把它理解成：**需求、设计和任务真的对得上吗？**
+> **一句话理解：** 需求、设计和任务真的对得上吗？
 
-</details>
+#### 7. Implement — 把任务真正变成代码
 
-<details>
-<summary><strong>7. Implement — 把任务真正变成代码</strong></summary>
+[`speckit-implement`](./skills/speckit-implement/SKILL.md)
 
-**Skill：** [`speckit-implement`](./skills/speckit-implement/SKILL.md)
+**作用**
 
-**作用**  
 根据已经准备好的任务列表，以及前面生成的 Spec Kit 工件，执行实际开发工作。
 
-**适合什么时候使用**
+**适合场景**
+
 - Specification、Plan 和 Tasks 都已准备好
 - 必要的 Clarify 和 Analyze 已经完成
 - 准备让 Agent 正式修改代码
@@ -287,19 +282,18 @@ Plan 中的每个组件是否都有实现任务？
 并遵循 plan.md 中定义的架构和约束。
 ```
 
-可以把它理解成：**现在开始把计划变成代码。**
+> **一句话理解：** 现在开始把计划变成代码。
 
-</details>
+#### 8. Converge — 检查是否真正完成
 
-<details>
-<summary><strong>8. Converge — 检查是否真正完成</strong></summary>
+[`speckit-converge`](./skills/speckit-converge/SKILL.md)
 
-**Skill：** [`speckit-converge`](./skills/speckit-converge/SKILL.md)
+**作用**
 
-**作用**  
 重新对比当前实现、Specification 和相关工件，识别遗漏并补齐尚未完成的工作。
 
-**适合什么时候使用**
+**适合场景**
+
 - 已经完成一轮 Implement
 - 功能看起来做完了，但希望从需求层面再检查一次
 - 开发过程中需求发生过变化
@@ -313,21 +307,20 @@ Plan 中的每个组件是否都有实现任务？
 以及仍然没有完成的任务。
 ```
 
-可以把它理解成：**代码写完了，但需求真的全部完成了吗？**
-
-</details>
+> **一句话理解：** 代码写完了，但需求真的全部完成了吗？
 
 ### 辅助 Skills
 
-<details>
-<summary><strong>Checklist — 生成有针对性的质量检查清单</strong></summary>
+#### Checklist — 生成有针对性的质量检查清单
 
-**Skill：** [`speckit-checklist`](./skills/speckit-checklist/SKILL.md)
+[`speckit-checklist`](./skills/speckit-checklist/SKILL.md)
 
-**作用**  
+**作用**
+
 根据当前 Feature 和你希望执行的 Review 类型生成对应检查清单。
 
-**适合什么时候使用**
+**适合场景**
+
 - 需求评审
 - 设计评审
 - Code Review
@@ -341,17 +334,18 @@ Plan 中的每个组件是否都有实现任务？
 重点覆盖认证失败、Session 失效、敏感日志和回归测试。
 ```
 
-</details>
+> **一句话理解：** 在进入下一阶段之前，需要检查哪些事情？
 
-<details>
-<summary><strong>Tasks to Issues — 把任务转成 GitHub Issues</strong></summary>
+#### Tasks to Issues — 把任务转成 GitHub Issues
 
-**Skill：** [`speckit-taskstoissues`](./skills/speckit-taskstoissues/SKILL.md)
+[`speckit-taskstoissues`](./skills/speckit-taskstoissues/SKILL.md)
 
-**作用**  
+**作用**
+
 将已经生成的 Tasks 转换成带依赖关系的 GitHub Issues，方便在 GitHub 中继续跟踪和协作。
 
-**适合什么时候使用**
+**适合场景**
+
 - 团队开发
 - 使用 GitHub Projects 或 Issue 驱动开发
 - 多 Agent 协作
@@ -365,7 +359,7 @@ Plan 中的每个组件是否都有实现任务？
 才能开始 Session 管理相关工作。
 ```
 
-</details>
+> **一句话理解：** 如何把任务计划变成可以在 GitHub 中跟踪的工作？
 
 ## 推荐工作流
 
@@ -390,6 +384,7 @@ Plan 中的每个组件是否都有实现任务？
 并不是每个项目都必须执行全部步骤。可以根据项目规模、风险和成熟度选择需要的 Skill。
 
 辅助 Skills 可以按需要插入：
+
 - **Checklist**：适合需求、设计、代码评审和 Release 前检查
 - **Tasks to Issues**：适合需要通过 GitHub 管理和协作的工作
 
