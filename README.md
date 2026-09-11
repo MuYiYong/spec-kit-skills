@@ -103,6 +103,33 @@ SHA256SUMS
 
 > The contents under [`skills/`](./skills) are the source of truth for the currently available Skills.
 
+## Recommended workflow
+
+```text
+1. Constitution   Define project rules and long-term constraints
+        ↓
+2. Specify        Describe what needs to be built
+        ↓
+3. Clarify        Resolve ambiguity and missing decisions
+        ↓
+4. Plan           Design how it will be implemented
+        ↓
+5. Tasks          Break the plan into executable work
+        ↓
+6. Analyze        Check specification / plan / task consistency
+        ↓
+7. Implement      Build the feature
+        ↓
+8. Converge       Verify the implementation matches the specification
+```
+
+You do **not** need to run every Skill for every project. Use the steps that match the size, risk, and maturity of the work.
+
+Supporting Skills can be inserted where needed:
+
+- **Checklist** at requirement, design, code-review, or release gates
+- **Tasks to Issues** when work should be coordinated through GitHub
+
 ## Skill guide
 
 ### Core workflow
@@ -132,6 +159,14 @@ Define project principles that require:
 - No direct secrets in source control
 ```
 
+**Example prompt**
+
+```text
+Use speckit-constitution to define the engineering principles for this project:
+TypeScript only, test all public APIs, keep database migrations backward-compatible,
+and never commit secrets to source control.
+```
+
 > **In one sentence:** What rules must this project follow?
 
 #### 2. Specify — Turn an idea into a clear specification
@@ -154,6 +189,14 @@ Transforms a natural-language feature idea into a structured Feature Specificati
 Add GitHub OAuth login.
 Administrators must be able to disable users,
 and disabled users should no longer be able to access the application.
+```
+
+**Example prompt**
+
+```text
+Use speckit-specify to turn the following request into a complete Feature Specification:
+Add GitHub OAuth login. Administrators can disable users,
+and disabled users must lose access to the application.
 ```
 
 > **In one sentence:** What exactly are we building?
@@ -179,6 +222,13 @@ Examines the current specification for ambiguity, missing decisions, edge cases,
 What happens when GitHub OAuth fails?
 Can one GitHub identity be linked to multiple accounts?
 Should disabling a user immediately invalidate active sessions?
+```
+
+**Example prompt**
+
+```text
+Use speckit-clarify to review the current authentication specification.
+Ask only the questions that must be answered before technical planning can begin.
 ```
 
 > **In one sentence:** What have we not made clear yet?
@@ -207,6 +257,13 @@ Plan GitHub OAuth using:
 - An admin endpoint for disabling users
 ```
 
+**Example prompt**
+
+```text
+Use speckit-plan to create the technical implementation plan for the current specification.
+Cover architecture, data model, APIs, dependencies, testing strategy, and implementation risks.
+```
+
 > **In one sentence:** How are we going to build this?
 
 #### 5. Tasks — Break the plan into executable work
@@ -231,6 +288,13 @@ T002 Implement GitHub OAuth callback
 T003 Add session management
 T004 Add administrator disable-user API
 T005 Add integration tests
+```
+
+**Example prompt**
+
+```text
+Use speckit-tasks to break the current implementation plan into executable tasks.
+Preserve dependencies and identify tasks that can be worked on in parallel.
 ```
 
 > **In one sentence:** What needs to be done, and in what order?
@@ -259,6 +323,13 @@ Are there tasks that are not justified by the specification?
 Are any requirements contradicted by the technical plan?
 ```
 
+**Example prompt**
+
+```text
+Use speckit-analyze to check the current specification, plan, and tasks for gaps,
+conflicts, missing coverage, and unnecessary work before implementation starts.
+```
+
 > **In one sentence:** Do the requirements, design, and tasks actually line up?
 
 #### 7. Implement — Turn the prepared tasks into code
@@ -280,6 +351,14 @@ Executes the implementation based on the prepared task list and the artifacts cr
 ```text
 Implement the authentication feature from tasks.md,
 following the architecture and constraints defined in plan.md.
+```
+
+**Example prompt**
+
+```text
+Use speckit-implement to execute the current tasks.md.
+Follow the specification and plan, complete tasks in dependency order,
+and keep the implementation aligned with the defined constraints.
 ```
 
 > **In one sentence:** Turn the plan into working code.
@@ -305,6 +384,13 @@ Compares the current implementation against the specification and related artifa
 Compare the implemented OAuth flow with the specification.
 Identify unmet acceptance criteria, missing edge cases,
 and any tasks that still need to be completed.
+```
+
+**Example prompt**
+
+```text
+Use speckit-converge to compare the current implementation with the specification,
+plan, and tasks. Identify remaining gaps and complete the work required to converge.
 ```
 
 > **In one sentence:** The code exists — does it actually satisfy the specification?
@@ -334,6 +420,14 @@ covering authentication failures, session invalidation,
 security-sensitive logging, and regression tests.
 ```
 
+**Example prompt**
+
+```text
+Use speckit-checklist to create a release-readiness checklist for this feature.
+Focus on authentication failures, session invalidation, sensitive logging,
+and regression coverage.
+```
+
 > **In one sentence:** What should we verify before moving forward?
 
 #### Tasks to Issues — Move execution into GitHub Issues
@@ -359,34 +453,14 @@ preserving dependencies so session management cannot start
 before the user and OAuth identity models are ready.
 ```
 
-> **In one sentence:** How do we turn the task plan into trackable GitHub work?
-
-## Recommended workflow
+**Example prompt**
 
 ```text
-1. Constitution   Define project rules and long-term constraints
-        ↓
-2. Specify        Describe what needs to be built
-        ↓
-3. Clarify        Resolve ambiguity and missing decisions
-        ↓
-4. Plan           Design how it will be implemented
-        ↓
-5. Tasks          Break the plan into executable work
-        ↓
-6. Analyze        Check specification / plan / task consistency
-        ↓
-7. Implement      Build the feature
-        ↓
-8. Converge       Verify the implementation matches the specification
+Use speckit-taskstoissues to convert the current tasks into GitHub Issues.
+Preserve task dependencies and make each issue independently actionable.
 ```
 
-You do **not** need to run every Skill for every project. Use the steps that match the size, risk, and maturity of the work.
-
-Supporting Skills can be inserted where needed:
-
-- **Checklist** at requirement, design, code-review, or release gates
-- **Tasks to Issues** when work should be coordinated through GitHub
+> **In one sentence:** How do we turn the task plan into trackable GitHub work?
 
 ## Releases
 
