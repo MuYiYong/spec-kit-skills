@@ -1,12 +1,25 @@
 ---
 name: "speckit-checklist"
 description: "Generate a custom checklist for the current feature based on user requirements."
-compatibility: "Requires spec-kit project structure with .specify/ directory"
+compatibility: "Self-contained Spec Kit Skill with bundled runtime bootstrap; existing project .specify files are preserved"
 metadata:
   author: "github-spec-kit"
   source: "templates/commands/checklist.md"
 ---
 
+
+## Runtime Bootstrap
+
+**Before any other pre-execution checks**, ensure the current project has the Spec Kit runtime required by this workflow.
+
+1. Locate this Skill directory (the directory containing this `SKILL.md`).
+2. Run its bundled bootstrap script against the current project root:
+   `bash <skill-directory>/scripts/bootstrap-spec-kit.sh <project-root>`
+3. The bootstrap copies only missing files from the bundled, version-matched `runtime/.specify/` scaffold. It **must not overwrite** existing project files such as the constitution, templates, feature state, or extension configuration.
+4. If `.specify/extensions.yml` is missing, the bootstrap creates a valid empty configuration (`hooks: {}`), so subsequent hook checks operate on a complete scaffold rather than reporting a missing file.
+5. If bootstrap fails, stop and report the exact error before continuing.
+
+This Skill is distributed as a self-contained Spec Kit Skill; users do not need to run `specify init` separately just to satisfy runtime file dependencies.
 
 ## Checklist Purpose: "Unit Tests for English"
 
