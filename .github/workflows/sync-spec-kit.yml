@@ -38,7 +38,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          FORCE_SYNC: ${{ github.event_name == 'workflow_dispatch' && inputs.force || false }}
+          FORCE_SYNC: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.force) || false }}
         run: |
           set -euo pipefail
 
@@ -106,7 +106,7 @@ jobs:
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
 
-      - name: Generate official Codex skills
+      - name: Generate official Codex skills and bundled runtime
         if: steps.upstream.outputs.needs_sync == 'true'
         shell: bash
         env:
@@ -124,8 +124,14 @@ jobs:
             --ignore-agent-tools
 
           source_skills="${generated}/.agents/skills"
+          source_runtime="${generated}/.specify"
+
           if [[ ! -d "${source_skills}" ]]; then
             echo "Spec Kit did not generate ${source_skills}" >&2
+            exit 1
+          fi
+          if [[ ! -d "${source_runtime}" ]]; then
+            echo "Spec Kit did not generate ${source_runtime}" >&2
             exit 1
           fi
 
@@ -133,7 +139,116 @@ jobs:
           mkdir -p skills
           cp -a "${source_skills}/." skills/
 
-      - name: Validate generated skills
+          for skill_dir in skills/speckit-*; do
+            [[ -d "${skill_dir}" ]] || continue
+
+            mkdir -p "${skill_dir}/runtime/.specify" "${skill_dir}/scripts"
+            cp -a "${source_runtime}/." "${skill_dir}/runtime/.specify/"
+
+            cat > "${skill_dir}/scripts/bootstrap-spec-kit.sh" <<'EOF_BOOTSTRAP'
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          SCRIPT_DIR="$(CDPATH="" cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          SKILL_DIR="$(CDPATH="" cd "${SCRIPT_DIR}/.." && pwd)"
+          RUNTIME_DIR="${SKILL_DIR}/runtime/.specify"
+
+          if [[ ! -d "${RUNTIME_DIR}" ]]; then
+            echo "ERROR: bundled Spec Kit runtime not found: ${RUNTIME_DIR}" >&2
+            exit 1
+          fi
+
+          if [[ $# -gt 1 ]]; then
+            echo "Usage: $0 [project-root]" >&2
+            exit 2
+          fi
+
+          if [[ $# -eq 1 ]]; then
+            PROJECT_ROOT="$(CDPATH="" cd "$1" && pwd)"
+          elif git_root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+            PROJECT_ROOT="${git_root}"
+          else
+            PROJECT_ROOT="$(pwd)"
+          fi
+
+          TARGET_DIR="${PROJECT_ROOT}/.specify"
+          mkdir -p "${TARGET_DIR}"
+
+          added=0
+
+          while IFS= read -r -d '' src_dir; do
+            rel="${src_dir#${RUNTIME_DIR}/}"
+            [[ "${src_dir}" == "${RUNTIME_DIR}" ]] && rel=""
+            mkdir -p "${TARGET_DIR}${rel:+/${rel}}"
+          done < <(find "${RUNTIME_DIR}" -type d -print0)
+
+          while IFS= read -r -d '' src_file; do
+            rel="${src_file#${RUNTIME_DIR}/}"
+            dst_file="${TARGET_DIR}/${rel}"
+            if [[ ! -e "${dst_file}" ]]; then
+              mkdir -p "$(dirname "${dst_file}")"
+              cp -p "${src_file}" "${dst_file}"
+              echo "Added .specify/${rel}"
+              added=$((added + 1))
+            fi
+          done < <(find "${RUNTIME_DIR}" -type f -print0)
+
+          if [[ ! -e "${TARGET_DIR}/extensions.yml" ]]; then
+            cat > "${TARGET_DIR}/extensions.yml" <<'EOF_EXTENSIONS'
+          # No Spec Kit extensions are configured yet.
+          hooks: {}
+          EOF_EXTENSIONS
+            echo "Added .specify/extensions.yml"
+            added=$((added + 1))
+          fi
+
+          if [[ -d "${TARGET_DIR}/scripts/bash" ]]; then
+            find "${TARGET_DIR}/scripts/bash" -type f -name '*.sh' -exec chmod +x {} +
+          fi
+
+          echo "Spec Kit runtime ready at ${TARGET_DIR} (${added} missing file(s) added; existing files preserved)."
+          EOF_BOOTSTRAP
+
+            chmod +x "${skill_dir}/scripts/bootstrap-spec-kit.sh"
+          done
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          bootstrap = '''## Runtime Bootstrap
+
+          **Before any other pre-execution checks**, ensure the current project has the Spec Kit runtime required by this workflow.
+
+          1. Locate this Skill directory (the directory containing this `SKILL.md`).
+          2. Run its bundled bootstrap script against the current project root:
+             `bash <skill-directory>/scripts/bootstrap-spec-kit.sh <project-root>`
+          3. The bootstrap copies only missing files from the bundled, version-matched `runtime/.specify/` scaffold. It **must not overwrite** existing project files such as the constitution, templates, feature state, or extension configuration.
+          4. If `.specify/extensions.yml` is missing, the bootstrap creates a valid empty configuration (`hooks: {}`), so subsequent hook checks operate on a complete scaffold rather than reporting a missing file.
+          5. If bootstrap fails, stop and report the exact error before continuing.
+
+          This Skill is distributed as a self-contained Spec Kit Skill; users do not need to run `specify init` separately just to satisfy runtime file dependencies.
+
+          '''
+
+          for path in sorted(Path('skills').glob('speckit-*/SKILL.md')):
+              text = path.read_text(encoding='utf-8')
+              if '## Runtime Bootstrap' in text:
+                  continue
+              if not text.startswith('---\n'):
+                  raise SystemExit(f'Unexpected frontmatter format: {path}')
+              end = text.find('\n---\n', 4)
+              if end == -1:
+                  raise SystemExit(f'Unable to locate frontmatter end: {path}')
+              insert_at = end + len('\n---\n')
+              text = text[:insert_at] + '\n\n' + bootstrap + text[insert_at:].lstrip('\n')
+              text = text.replace(
+                  'compatibility: "Requires spec-kit project structure with .specify/ directory"',
+                  'compatibility: "Self-contained Spec Kit Skill with bundled runtime bootstrap; existing project .specify files are preserved"',
+              )
+              path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Validate generated skills and runtime bootstrap
         if: steps.upstream.outputs.needs_sync == 'true'
         shell: bash
         run: |
@@ -142,10 +257,14 @@ jobs:
           required=(
             "skills/speckit-constitution/SKILL.md"
             "skills/speckit-specify/SKILL.md"
+            "skills/speckit-clarify/SKILL.md"
             "skills/speckit-plan/SKILL.md"
             "skills/speckit-tasks/SKILL.md"
+            "skills/speckit-checklist/SKILL.md"
+            "skills/speckit-analyze/SKILL.md"
             "skills/speckit-implement/SKILL.md"
             "skills/speckit-converge/SKILL.md"
+            "skills/speckit-taskstoissues/SKILL.md"
           )
 
           for path in "${required[@]}"; do
@@ -161,7 +280,35 @@ jobs:
             exit 1
           fi
 
-          echo "Validated ${skill_count} generated skills"
+          for skill_dir in skills/speckit-*; do
+            [[ -d "${skill_dir}" ]] || continue
+            test -x "${skill_dir}/scripts/bootstrap-spec-kit.sh"
+            test -s "${skill_dir}/runtime/.specify/scripts/bash/check-prerequisites.sh"
+            test -s "${skill_dir}/runtime/.specify/scripts/bash/common.sh"
+            test -d "${skill_dir}/runtime/.specify/templates"
+            grep -q '^## Runtime Bootstrap$' "${skill_dir}/SKILL.md"
+          done
+
+          # Functional bootstrap regression test: start with a partial project,
+          # preserve an existing file, fill the missing runtime, then execute the
+          # exact helper that speckit-clarify requires.
+          test_project="${RUNNER_TEMP}/runtime-bootstrap-test"
+          rm -rf "${test_project}"
+          mkdir -p "${test_project}/.specify/memory" "${test_project}/specs/001-test"
+          printf 'CUSTOM-CONSTITUTION\n' > "${test_project}/.specify/memory/constitution.md"
+          printf '# Test Spec\n' > "${test_project}/specs/001-test/spec.md"
+          printf '{"feature_directory":"specs/001-test"}\n' > "${test_project}/.specify/feature.json"
+
+          bash skills/speckit-clarify/scripts/bootstrap-spec-kit.sh "${test_project}"
+
+          grep -q '^CUSTOM-CONSTITUTION$' "${test_project}/.specify/memory/constitution.md"
+          grep -q '^hooks: {}$' "${test_project}/.specify/extensions.yml"
+          test -x "${test_project}/.specify/scripts/bash/check-prerequisites.sh"
+
+          paths_json="$(cd "${test_project}" && .specify/scripts/bash/check-prerequisites.sh --json --paths-only)"
+          printf '%s\n' "${paths_json}" | jq -e '.FEATURE_SPEC | endswith("/specs/001-test/spec.md")' >/dev/null
+
+          echo "Validated ${skill_count} generated skills with self-contained Spec Kit runtime bootstrap"
 
       - name: Update upstream version marker
         if: steps.upstream.outputs.needs_sync == 'true'
@@ -185,7 +332,7 @@ jobs:
 
           if ! git diff --quiet -- skills UPSTREAM_VERSION; then
             git add skills UPSTREAM_VERSION
-            git commit -m "chore: sync spec-kit ${SPEC_KIT_TAG}"
+            git commit -m "chore: sync spec-kit ${SPEC_KIT_TAG} with bundled runtime"
             git push origin HEAD:main
           else
             echo "Generated output is unchanged; nothing to commit."
@@ -205,7 +352,7 @@ jobs:
           mkdir -p "${package_dir}"
 
           cp -a skills "${package_dir}/skills"
-          cp README.md UPSTREAM_VERSION "${package_dir}/"
+          cp README.md README.zh-CN.md UPSTREAM_VERSION "${package_dir}/"
 
           (
             cd "${RUNNER_TEMP}"
@@ -218,7 +365,7 @@ jobs:
             "${package_name}.tar.gz" \
             > SHA256SUMS
 
-      - name: Publish GitHub Release
+      - name: Publish GitHub Release and retag current distribution
         if: steps.upstream.outputs.needs_release == 'true'
         shell: bash
         env:
@@ -231,7 +378,9 @@ jobs:
           package_name="spec-kit-skills-${SPEC_KIT_TAG}"
           release_sha="$(git rev-parse HEAD)"
           notes="$(cat <<EOF_NOTES
-          Automatically generated Codex skills for upstream Spec Kit ${SPEC_KIT_TAG}.
+          Ready-to-use Codex Skills generated from upstream Spec Kit ${SPEC_KIT_TAG}.
+
+          This distribution bundles a version-matched Spec Kit runtime inside each Skill. When a project has a missing or partial `.specify/` scaffold, the Skill bootstrap fills only the missing runtime files and preserves existing project configuration and artifacts.
 
           Upstream release: https://github.com/github/spec-kit/releases/tag/${SPEC_KIT_TAG}
 
@@ -243,6 +392,14 @@ jobs:
           )"
 
           if [[ "${RELEASE_EXISTS}" == "true" ]]; then
+            git tag -f "${SPEC_KIT_TAG}" "${release_sha}"
+            git push --force origin "refs/tags/${SPEC_KIT_TAG}"
+
+            gh release edit "${SPEC_KIT_TAG}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --title "Spec Kit Skills ${SPEC_KIT_TAG}" \
+              --notes "${notes}"
+
             gh release upload "${SPEC_KIT_TAG}" \
               "${package_name}.zip" \
               "${package_name}.tar.gz" \
