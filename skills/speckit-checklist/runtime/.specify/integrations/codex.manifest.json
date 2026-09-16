@@ -1,10 +1,10 @@
 {
   "integration": "codex",
-  "version": "1.0.6",
-  "installed_at": "2026-09-12T08:50:26.608438+00:00",
+  "version": "1.0.7",
+  "installed_at": "2026-09-16T07:44:47.860704+00:00",
   "files": {
     ".agents/skills/speckit-analyze/SKILL.md": "0b3261b13cc33537f24b3e1f6d5320694c348302c385d0046dc6b958cf2db6cb",
-    ".agents/skills/speckit-clarify/SKILL.md": "7a06609c7b2ac43ed89a55d22f4bc1b8d712d8bfa48ea30a82f17258f9408f44",
+    ".agents/skills/speckit-clarify/SKILL.md": "f6acfbc82c96c0d91b2429fd0b51ce7df7f94b003d1b73acc54470d48bcc455e",
     ".agents/skills/speckit-constitution/SKILL.md": "b2a6a979ef7511812b60cde4adb6f1c4a8b1b57314ea2f1861ebc3f4796bf377",
     ".agents/skills/speckit-implement/SKILL.md": "848a5c9eff7b99e348927cbde6c35378de9fea3fd317941f58fa0b0b79301eec",
     ".agents/skills/speckit-converge/SKILL.md": "ba0b853dba470f414cdf9eae53200b8468bd639ecd92549a6d4e533af3da7521",
